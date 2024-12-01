@@ -1,0 +1,28 @@
+{
+    "name": "saasformation/framework-testing",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "SaaSFormation",
+            "email": "info@saasformation.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "SaaSFormation\\Framework\\Testing\\": "src"
+        }
+    },
+    "require": {
+        "php": "^8.3",
+        "saasformation/framework-contracts": "^1.0",
+        "psr/container": "^2",
+        "behat/behat": "^3.16",
+        "phpunit/phpunit": "^11.4"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "1.x-dev"
+        }
+    }
+}
