@@ -12,6 +12,7 @@ use SaaSFormation\Framework\Contracts\Infrastructure\KernelInterface;
 use SaaSFormation\Framework\Projects\Infrastructure\API\DefaultRequestErrorProcessor;
 use SaaSFormation\Framework\Projects\Infrastructure\API\DefaultRequestProcessor;
 use SaaSFormation\Framework\Projects\Infrastructure\API\LeagueRouterProvider;
+use SaaSFormation\Framework\Projects\Infrastructure\MySQLClientProvider;
 
 final class MainContext implements Context
 {
@@ -26,12 +27,23 @@ final class MainContext implements Context
 
     private RequestProcessorInterface $requestProcessor;
 
-    public function __construct(private readonly KernelInterface $kernel)
+    private \PDO $pdo;
+
+    public function __construct(private readonly KernelInterface $kernel, readonly MySQLClientProvider $mySQLClientProvider)
     {
         $this->requestProcessor = new DefaultRequestProcessor(
             (new LeagueRouterProvider())->provide($this->kernel->container()),
             new DefaultRequestErrorProcessor($this->kernel->logger())
         );
+        $this->pdo = $this->mySQLClientProvider->provide();
+    }
+
+    /**
+     * @beforeScenario
+     */
+    public function beforeScenario(): void
+    {
+        $this->pdo->beginTransaction();
     }
 
     /**
@@ -40,6 +52,7 @@ final class MainContext implements Context
     public function afterScenario(): void
     {
         $this->response = null;
+        $this->pdo->rollBack();
     }
 
     /**
