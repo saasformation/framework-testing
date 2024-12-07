@@ -6,9 +6,7 @@ use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use PHPUnit\Framework\Assert;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Log\LoggerInterface;
 use React\Http\Message\ServerRequest;
-use SaaSFormation\Framework\Contracts\Common\Identity\UUIDFactoryInterface;
 use SaaSFormation\Framework\Contracts\Infrastructure\API\RequestProcessorInterface;
 use SaaSFormation\Framework\Contracts\Infrastructure\KernelInterface;
 use SaaSFormation\Framework\Contracts\Infrastructure\WriteModel\ClientInterface;
@@ -34,8 +32,6 @@ final class MainContext implements Context
 
     public function __construct(
         private readonly KernelInterface $kernel,
-        private readonly LoggerInterface $logger,
-        private readonly UUIDFactoryInterface $UUIDFactory,
         readonly ClientProviderInterface $writeModelClientProvider
     )
     {
@@ -43,7 +39,7 @@ final class MainContext implements Context
             (new LeagueRouterProvider())->provide($this->kernel->container()),
             new DefaultRequestErrorProcessor($this->kernel->logger())
         );
-        $this->writeModelClient = $this->writeModelClientProvider->provide($this->logger, $this->UUIDFactory);
+        $this->writeModelClient = $this->writeModelClientProvider->provide();
     }
 
     /**
