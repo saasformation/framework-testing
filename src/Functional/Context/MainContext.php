@@ -6,13 +6,16 @@ use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use PHPUnit\Framework\Assert;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 use React\Http\Message\ServerRequest;
+use SaaSFormation\Framework\Contracts\Common\Identity\UUIDFactoryInterface;
 use SaaSFormation\Framework\Contracts\Infrastructure\API\RequestProcessorInterface;
 use SaaSFormation\Framework\Contracts\Infrastructure\KernelInterface;
+use SaaSFormation\Framework\Contracts\Infrastructure\WriteModel\ClientInterface;
+use SaaSFormation\Framework\Contracts\Infrastructure\WriteModel\ClientProviderInterface;
 use SaaSFormation\Framework\Projects\Infrastructure\API\DefaultRequestErrorProcessor;
 use SaaSFormation\Framework\Projects\Infrastructure\API\DefaultRequestProcessor;
 use SaaSFormation\Framework\Projects\Infrastructure\API\LeagueRouterProvider;
-use SaaSFormation\Framework\Projects\Infrastructure\MySQLClientProvider;
 
 final class MainContext implements Context
 {
@@ -27,15 +30,20 @@ final class MainContext implements Context
 
     private RequestProcessorInterface $requestProcessor;
 
-    private \PDO $pdo;
+    private ClientInterface $writeModelClient;
 
-    public function __construct(private readonly KernelInterface $kernel, readonly MySQLClientProvider $mySQLClientProvider)
+    public function __construct(
+        private readonly KernelInterface $kernel,
+        private readonly LoggerInterface $logger,
+        private readonly UUIDFactoryInterface $UUIDFactory,
+        readonly ClientProviderInterface $writeModelClientProvider
+    )
     {
         $this->requestProcessor = new DefaultRequestProcessor(
             (new LeagueRouterProvider())->provide($this->kernel->container()),
             new DefaultRequestErrorProcessor($this->kernel->logger())
         );
-        $this->pdo = $this->mySQLClientProvider->provide();
+        $this->writeModelClient = $this->writeModelClientProvider->provide($this->logger, $this->UUIDFactory);
     }
 
     /**
@@ -43,7 +51,7 @@ final class MainContext implements Context
      */
     public function beforeScenario(): void
     {
-        $this->pdo->beginTransaction();
+        $this->writeModelClient->beginTransaction();
     }
 
     /**
@@ -52,7 +60,7 @@ final class MainContext implements Context
     public function afterScenario(): void
     {
         $this->response = null;
-        $this->pdo->rollBack();
+        $this->writeModelClient->rollbackTransaction();
     }
 
     /**
