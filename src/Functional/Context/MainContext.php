@@ -19,8 +19,10 @@ final class MainContext implements Context
 {
     /** @var array<string, string> */
     private const array PLACEHOLDERS = [
-        '$$placeholder$$' => '/^(.*?)$/',
-        '$$integer$$' => '/^\d*?$/'
+        '$$placeholder$$' => '(.*?)',
+        '$$integer$$' => '\d*?',
+        '[' => '\[',
+        ']' => '\]'
     ];
     private ?ResponseInterface $response;
     /** @var array<string, string> */
@@ -126,7 +128,7 @@ final class MainContext implements Context
             throw new \Exception("Expected body couldn't be parsed to JSON");
         }
 
-        $expected = str_replace(array_keys(self::PLACEHOLDERS), array_values(self::PLACEHOLDERS), $jsonString);
+        $expected = "/^" . str_replace(array_keys(self::PLACEHOLDERS), array_values(self::PLACEHOLDERS), $jsonString) . "$/";
         $actual = json_encode(json_decode($this->response->getBody()->getContents()), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         if (!$actual) {
