@@ -39,7 +39,8 @@ final class MainContext implements Context
     {
         $this->requestProcessor = new DefaultRequestProcessor(
             (new LeagueRouterProvider())->provide($this->kernel->container()),
-            new DefaultRequestErrorProcessor($this->kernel->logger())
+            new DefaultRequestErrorProcessor($this->kernel->logger()),
+            $kernel
         );
         $this->writeModelClient = $this->writeModelClientProvider->provide();
     }
