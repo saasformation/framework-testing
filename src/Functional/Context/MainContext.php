@@ -55,6 +55,7 @@ final class MainContext implements Context
         $this->writeModelClient = $this->writeModelClientProvider->provide();
         $this->mongoDBClient = $this->mongoDBClientProvider->provide();
         $this->requestId = $this->UUIDFactory->generate();
+        $this->mongoDBClient->startSession($this->requestId);
     }
 
     /**
