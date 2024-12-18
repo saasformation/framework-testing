@@ -37,7 +37,7 @@ final class MainContext implements Context
     private ClientInterface $writeModelClient;
     private MongoDBClient $mongoDBClient;
 
-    private IdInterface $requestId;
+    public static IdInterface $requestId;
 
     public function __construct(
         private readonly KernelInterface       $kernel,
@@ -54,8 +54,8 @@ final class MainContext implements Context
         );
         $this->writeModelClient = $this->writeModelClientProvider->provide();
         $this->mongoDBClient = $this->mongoDBClientProvider->provide();
-        $this->requestId = $this->UUIDFactory->generate();
-        $this->mongoDBClient->startSession($this->requestId);
+        self::$requestId = $this->UUIDFactory->generate();
+        $this->mongoDBClient->startSession(self::$requestId);
     }
 
     /**
@@ -64,7 +64,7 @@ final class MainContext implements Context
     public function beforeScenario(): void
     {
         $this->writeModelClient->beginTransaction();
-        $this->mongoDBClient->beginTransaction($this->requestId);
+        $this->mongoDBClient->beginTransaction(self::$requestId);
     }
 
     /**
@@ -74,7 +74,7 @@ final class MainContext implements Context
     {
         $this->response = null;
         $this->writeModelClient->rollbackTransaction();
-        $this->mongoDBClient->rollbackTransaction($this->requestId);
+        $this->mongoDBClient->rollbackTransaction(self::$requestId);
     }
 
     /**
